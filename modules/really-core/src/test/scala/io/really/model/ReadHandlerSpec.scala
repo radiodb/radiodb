@@ -13,13 +13,12 @@ import io.really.model.persistent.PersistentModelStore
 import io.really.protocol.{ ReadOpts, GetOpts }
 import io.really.Result.{ ReadResult, GetResult }
 import io.really._
-import _root_.io.really.json.collection.JSONCollection
 import _root_.io.really.rql.RQL.{ Term, Operator, TermValue, SimpleQuery, EmptyQuery }
 import _root_.io.really.rql.RQLTokens.PaginationToken
+import play.modules.reactivemongo.json.collection._
+import play.modules.reactivemongo.json._
 import scala.concurrent.duration._
-
 import play.api.libs.json._
-
 import scala.concurrent.Await
 
 class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
@@ -54,7 +53,7 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
     val r = R / 'cars / 9999
     val userObj = Json.obj("model" -> "Honda Civic", "production" -> 2010, "_rev" -> 1, "_r" -> r, "_id" -> 9999)
     val collection = globals.mongodbConnection.collection[JSONCollection]("cars")
-    val result = Await.result(collection.save(userObj), 5.second)
+    val result = Await.result(collection.insert(userObj), 5.second)
     result.ok shouldBe true
     globals.readHandler ! Request.Get(ctx, r, GetOpts(Set("model", "production")))
     val ret = expectMsgType[GetResult]
@@ -65,7 +64,7 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
     val r = R / 'cars / 9998
     val userObj = Json.obj("model" -> "Toyota Avalon", "production" -> 2012, "_rev" -> 1, "_r" -> r, "_id" -> 9998)
     val collection = globals.mongodbConnection.collection[JSONCollection]("cars")
-    val result = Await.result(collection.save(userObj), 5.second)
+    val result = Await.result(collection.insert(userObj), 5.second)
     result.ok shouldBe true
     globals.readHandler ! Request.Get(ctx, r, GetOpts(Set("model")))
     val ret = expectMsgType[GetResult]
@@ -110,7 +109,7 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
       "_rev" -> 1, "_r" -> r / 111,
       "_parent0" -> "authors/11/", "_id" -> 111)
     val collection = globals.mongodbConnection.collection[JSONCollection]("posts_authors")
-    val result = Await.result(collection.save(postObj), 5.second)
+    val result = Await.result(collection.insert(postObj), 5.second)
     result.ok shouldBe true
 
     globals.readHandler ! Request.Read(ctx, r, cmdOpts, TestProbe().ref)
@@ -136,16 +135,26 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
       false
     )
     val collection = globals.mongodbConnection.collection[JSONCollection]("posts_authors")
-    val userObj = Json.obj("title" -> "The post title", "body" -> "The post body",
-      "_rev" -> 1, "_r" -> r / 111,
-      "_parent0" -> "authors/12/", "_id" -> 111)
-    val result = Await.result(collection.save(userObj), 5.second)
+    val userObj = Json.obj(
+      "title" -> "The post title",
+      "body" -> "The post body",
+      "_rev" -> 1,
+      "_r" -> r / 1111,
+      "_parent0" -> "authors/12/",
+      "_id" -> 1111
+    )
+    val result = Await.result(collection.insert(userObj), 5.second)
     result.ok shouldBe true
 
-    val userObj2 = Json.obj("title" -> "The post title", "body" -> "The post body",
-      "_rev" -> 1, "_r" -> r / 112,
-      "_parent0" -> "authors/12/", "_id" -> 112)
-    val result2 = Await.result(collection.save(userObj2), 5.second)
+    val userObj2 = Json.obj(
+      "title" -> "The post title",
+      "body" -> "The post body",
+      "_rev" -> 1,
+      "_r" -> r / 112,
+      "_parent0" -> "authors/12/",
+      "_id" -> 112
+    )
+    val result2 = Await.result(collection.insert(userObj2), 5.second)
     result2.ok shouldBe true
 
     globals.readHandler ! Request.Read(ctx, r, cmdOpts, TestProbe().ref)
@@ -167,32 +176,39 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
       false
     )
     val collection = globals.mongodbConnection.collection[JSONCollection]("posts_authors")
-    val userObj = Json.obj("title" -> "The post title", "body" -> "The post body",
-      "_rev" -> 1, "_r" -> r / 111,
-      "_parent0" -> "authors/12/", "_id" -> 111)
-    val result = Await.result(collection.save(userObj), 5.second)
+    val userObj = Json.obj(
+      "title" -> "The post title",
+      "body" -> "The post body",
+      "_rev" -> 1,
+      "_r" -> r / 222,
+      "_parent0" -> "authors/12/",
+      "_id" -> 222
+    )
+    val result = Await.result(collection.insert(userObj), 5.second)
     result.ok shouldBe true
 
     val userObj2 = Json.obj(
       "_deleted" -> true,
-      "_rev" -> 1, "_r" -> r / 111,
-      "_parent0" -> "authors/12/", "_id" -> 111
+      "_rev" -> 1,
+      "_r" -> r / 222,
+      "_parent0" -> "authors/12/",
+      "_id" -> 222
     )
-    val result2 = Await.result(collection.save(userObj2), 5.second)
+    val result2 = Await.result(collection.update(Json.obj("r" -> r / 222), userObj2), 5.second)
     result2.ok shouldBe true
 
     globals.readHandler ! Request.Read(ctx, r, cmdOpts, TestProbe().ref)
     val ret = expectMsgType[ReadResult]
-    ret.body.items.size shouldEqual (1)
-    ret.body.totalResults shouldEqual Some(1)
-    ret.body.items(0).body shouldEqual Json.obj("_r" -> "/authors/12/posts/112/", "_rev" -> 1, "title" -> "The post title")
+    ret.body.items.size shouldEqual (3)
+    ret.body.totalResults shouldEqual Some(3)
+    ret.body.items(2).body shouldEqual Json.obj("_r" -> "/authors/12/posts/112/", "_rev" -> 1, "title" -> "The post title")
   }
 
   it should "return object gone if trying to get a deleted object" in {
     val r = R / 'cars / 2015
     val userObj = Json.obj("_rev" -> 1, "_r" -> r, "_id" -> 2015, "_deleted" -> true)
     val collection = globals.mongodbConnection.collection[JSONCollection]("cars")
-    val result = Await.result(collection.save(userObj), 5.second)
+    val result = Await.result(collection.insert(userObj), 5.second)
     result.ok shouldBe true
     globals.readHandler ! Request.Get(ctx, r, GetOpts(Set("model", "production")))
     expectMsg(CommandError.ObjectGone(r))
@@ -214,15 +230,15 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
     )
     val collection = globals.mongodbConnection.collection[JSONCollection]("posts_authors")
     val userObj = Json.obj("title" -> "The post title", "body" -> "The post body",
-      "_rev" -> 1, "_r" -> r / 111,
-      "_parent0" -> "authors/13/", "_id" -> 111)
-    val result = Await.result(collection.save(userObj), 5.second)
+      "_rev" -> 1, "_r" -> r / 11111,
+      "_parent0" -> "authors/13/", "_id" -> 11111)
+    val result = Await.result(collection.insert(userObj), 5.second)
     result.ok shouldBe true
 
     val userObj2 = Json.obj("title" -> "Welcome to Scala", "body" -> "The post body",
-      "_rev" -> 1, "_r" -> r / 112,
-      "_parent0" -> "authors/13/", "_id" -> 112)
-    val result2 = Await.result(collection.save(userObj2), 5.second)
+      "_rev" -> 1, "_r" -> r / 1112,
+      "_parent0" -> "authors/13/", "_id" -> 1112)
+    val result2 = Await.result(collection.insert(userObj2), 5.second)
     result2.ok shouldBe true
 
     globals.readHandler ! Request.Read(ctx, r, cmdOpts, TestProbe().ref)
@@ -231,7 +247,7 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
     ret.body.items(0).body - "author" shouldEqual Json.obj(
       "title" -> "The post title",
       "body" -> "The post body",
-      "_rev" -> 1, "_r" -> r / 111
+      "_rev" -> 1, "_r" -> r / 11111
     )
     ret.body.totalResults shouldBe Some(1)
   }
@@ -252,7 +268,7 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
     val collection = globals.mongodbConnection.collection[JSONCollection]("cars")
     val carObj = Json.obj("model" -> "KIA", "production" -> 2000,
       "_rev" -> 1, "_r" -> r / 1000, "_id" -> 1000)
-    val result = Await.result(collection.save(carObj), 5.second)
+    val result = Await.result(collection.insert(carObj), 5.second)
     result.ok shouldBe true
 
     globals.readHandler ! Request.Read(ctx, r, cmdOpts, TestProbe().ref)
@@ -268,22 +284,22 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
     val collection = globals.mongodbConnection.collection[JSONCollection]("users")
     val userObj = Json.obj("name" -> "Augustine", "age" -> 20,
       "_rev" -> 1, "_r" -> r / 1000, "_id" -> 1000)
-    val result = Await.result(collection.save(userObj), 5.second)
+    val result = Await.result(collection.insert(userObj), 5.second)
     result.ok shouldBe true
 
     val userObj2 = Json.obj("name" -> "Lee minho", "age" -> 28,
       "_rev" -> 1, "_r" -> r / 1001, "_id" -> 1001)
-    val result2 = Await.result(collection.save(userObj2), 5.second)
+    val result2 = Await.result(collection.insert(userObj2), 5.second)
     result2.ok shouldBe true
 
     val userObj3 = Json.obj("name" -> "Joo Woo", "age" -> 10,
       "_rev" -> 1, "_r" -> r / 1002, "_id" -> 1002)
-    val result3 = Await.result(collection.save(userObj3), 5.second)
+    val result3 = Await.result(collection.insert(userObj3), 5.second)
     result3.ok shouldBe true
 
     val userObj4 = Json.obj("name" -> "Sara", "age" -> 22,
       "_rev" -> 1, "_r" -> r / 1003, "_id" -> 1003)
-    val result4 = Await.result(collection.save(userObj4), 5.second)
+    val result4 = Await.result(collection.insert(userObj4), 5.second)
     result4.ok shouldBe true
 
     val query = SimpleQuery(Term("age"), Operator.Gt, TermValue(JsNumber(20)))
@@ -387,63 +403,63 @@ class ReadHandlerSpec extends BaseActorSpecWithMongoDB {
     val collection = globals.mongodbConnection.collection[JSONCollection]("posts_authors")
 
     val postObj = Json.obj("title" -> "The post title", "body" -> "The post body",
-      "_rev" -> 1, "_r" -> r / 111,
-      "_parent0" -> "authors/15/", "_id" -> 111)
-    val result = Await.result(collection.save(postObj), 5.second)
+      "_rev" -> 1, "_r" -> r / 411,
+      "_parent0" -> "authors/15/", "_id" -> 411)
+    val result = Await.result(collection.insert(postObj), 5.second)
     result.ok shouldBe true
 
     val postObj2 = Json.obj("title" -> "The post title2", "body" -> "The post body2",
-      "_rev" -> 1, "_r" -> r / 112,
-      "_parent0" -> "authors/15/", "_id" -> 112)
-    val result2 = Await.result(collection.save(postObj2), 5.second)
+      "_rev" -> 1, "_r" -> r / 412,
+      "_parent0" -> "authors/15/", "_id" -> 412)
+    val result2 = Await.result(collection.insert(postObj2), 5.second)
     result2.ok shouldBe true
 
     val postObj3 = Json.obj("title" -> "The post title3", "body" -> "The post body3",
-      "_rev" -> 1, "_r" -> r / 113,
-      "_parent0" -> "authors/15/", "_id" -> 113)
-    val result3 = Await.result(collection.save(postObj3), 5.second)
+      "_rev" -> 1, "_r" -> r / 413,
+      "_parent0" -> "authors/15/", "_id" -> 413)
+    val result3 = Await.result(collection.insert(postObj3), 5.second)
     result3.ok shouldBe true
 
     val postObj4 = Json.obj("title" -> "The post title4", "body" -> "The post body4",
-      "_rev" -> 1, "_r" -> r / 114,
-      "_parent0" -> "authors/15/", "_id" -> 114)
-    val result4 = Await.result(collection.save(postObj4), 5.second)
+      "_rev" -> 1, "_r" -> r / 414,
+      "_parent0" -> "authors/15/", "_id" -> 414)
+    val result4 = Await.result(collection.insert(postObj4), 5.second)
     result4.ok shouldBe true
 
     val postObj5 = Json.obj("title" -> "The post title5", "body" -> "The post body5",
-      "_rev" -> 1, "_r" -> r / 115,
-      "_parent0" -> "authors/15/", "_id" -> 115)
-    val result5 = Await.result(collection.save(postObj5), 5.second)
+      "_rev" -> 1, "_r" -> r / 415,
+      "_parent0" -> "authors/15/", "_id" -> 415)
+    val result5 = Await.result(collection.insert(postObj5), 5.second)
     result5.ok shouldBe true
 
     globals.readHandler ! Request.Read(ctx, r, cmdOpts, TestProbe().ref)
     val ret = expectMsgType[ReadResult]
     ret.body.items.size shouldEqual (2)
     ret.body.totalResults shouldBe Some(5)
-    ret.body.tokens.get.nextToken shouldEqual PaginationToken(114, 1)
-    ret.body.tokens.get.prevToken shouldEqual PaginationToken(115, 0)
+    ret.body.tokens.get.nextToken shouldEqual PaginationToken(414, 1)
+    ret.body.tokens.get.prevToken shouldEqual PaginationToken(415, 0)
 
     globals.readHandler ! Request.Read(ctx, r, cmdOpts.copy(ascending = true), TestProbe().ref)
     val ret2 = expectMsgType[ReadResult]
     ret2.body.items.size shouldEqual (2)
     ret2.body.totalResults shouldBe Some(5)
-    ret2.body.tokens.get.nextToken shouldEqual PaginationToken(112, 1)
-    ret2.body.tokens.get.prevToken shouldEqual PaginationToken(111, 0)
+    ret2.body.tokens.get.nextToken shouldEqual PaginationToken(412, 1)
+    ret2.body.tokens.get.prevToken shouldEqual PaginationToken(411, 0)
 
     val readOpts = cmdOpts.copy(paginationToken = Some(ret.body.tokens.get.nextToken))
     globals.readHandler ! Request.Read(ctx, r, readOpts, TestProbe().ref)
     val ret3 = expectMsgType[ReadResult]
     ret3.body.items.size shouldEqual (2)
     ret3.body.totalResults shouldBe Some(5)
-    ret3.body.tokens.get.nextToken shouldEqual PaginationToken(112, 1)
-    ret3.body.tokens.get.prevToken shouldEqual PaginationToken(113, 0)
+    ret3.body.tokens.get.nextToken shouldEqual PaginationToken(412, 1)
+    ret3.body.tokens.get.prevToken shouldEqual PaginationToken(413, 0)
 
     globals.readHandler ! Request.Read(ctx, r, readOpts.copy(ascending = true), TestProbe().ref)
     val ret4 = expectMsgType[ReadResult]
     ret4.body.items.size shouldEqual (2)
     ret4.body.totalResults shouldBe Some(5)
-    ret4.body.tokens.get.nextToken shouldEqual PaginationToken(112, 1)
-    ret4.body.tokens.get.prevToken shouldEqual PaginationToken(111, 0)
+    ret4.body.tokens.get.nextToken shouldEqual PaginationToken(412, 1)
+    ret4.body.tokens.get.prevToken shouldEqual PaginationToken(411, 0)
   }
 
 }

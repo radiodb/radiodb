@@ -106,14 +106,14 @@ class ModelFieldsSpec extends FlatSpec with Matchers {
     val dep1 = ValueField("age", DataType.RLong, Some("""age < 100"""), Some("""50"""), true)
     val a = CalculatedField1("spatialAge", DataType.RLong,
       """
-        |function calculate(age) {
-        | print(age)
-        | if (age != undefined)
-        |   return age + 10;
-        | else
-        |   return 221;
-        |}
-      """.stripMargin, dep1)
+          |function calculate(age) {
+          | print(age)
+          | if (age != undefined)
+          |   return age + 10;
+          | else
+          |   return 221;
+          |}
+        """.stripMargin, dep1)
     assert(a.read(JsPath(), Json.obj("name" -> "John")) == JsSuccess(Json.obj("spatialAge" -> 221), JsPath() \ "spatialAge"))
   }
 
@@ -123,11 +123,11 @@ class ModelFieldsSpec extends FlatSpec with Matchers {
     val dep3 = ValueField("count", DataType.RString, None, None, true)
     val a = CalculatedField3("spatialAge", DataType.RLong,
       """
-        |function calculate(age, extra, count) {
-        |  print(parseInt(count));
-        |  return extra + age + parseInt(count);
-        |}
-      """.stripMargin, dep1, dep2, dep3)
+          |function calculate(age, extra, count) {
+          |  print(parseInt(count));
+          |  return extra + age + parseInt(count);
+          |}
+        """.stripMargin, dep1, dep2, dep3)
     assert(a.read(JsPath(), Json.obj("age" -> 5, "extra" -> 15, "count" -> "20")) == JsSuccess(Json.obj("spatialAge" -> 40), JsPath() \ "spatialAge"))
 
   }
@@ -137,10 +137,10 @@ class ModelFieldsSpec extends FlatSpec with Matchers {
     val dep2 = ValueField("extra", DataType.RLong, None, None, true)
     val a = CalculatedField2("spatialAge", DataType.RLong,
       """
-        |function calculate(age, extra) {
-        |  return extra + age;
-        |}
-      """.stripMargin, dep1, dep2)
+          |function calculate(age, extra) {
+          |  return extra + age;
+          |}
+        """.stripMargin, dep1, dep2)
     assert(a.read(JsPath(), Json.obj("age" -> 5, "extra" -> 15)) == JsSuccess(Json.obj("spatialAge" -> 20), JsPath() \ "spatialAge"))
   }
 
@@ -149,24 +149,24 @@ class ModelFieldsSpec extends FlatSpec with Matchers {
     val dep2 = ValueField("extra", DataType.RLong, None, None, true)
     val a = CalculatedField2("spatialAge", DataType.RLong,
       """
-        |function calculate(age, extra) {
-        |  return (extra + age ).toString();
-        |}
-      """.stripMargin, dep1, dep2)
+          |function calculate(age, extra) {
+          |  return (extra + age ).toString();
+          |}
+        """.stripMargin, dep1, dep2)
     assert(a.read(JsPath(), Json.obj("age" -> 5, "extra" -> 15)) == JsError(JsPath() \ "spatialAge", ValidationError("field.default.invalid_return_type")))
   }
 
-  //  it should "return error if one of dependant type miss match with its field type" in {
-  //    val dep1 = ValueField("age", DataType.RLong, Some( """age < 100"""), Some( """50"""), true)
-  //    val dep2 = ValueField("extra", DataType.RLong, None, Some( """50.5443"""), true)
-  //    val a = CalculatedField2("spatialAge", DataType.RLong,
-  //      """
-  //        |function calculate(age, extra) {
-  //        |  return extra + age ;
-  //        |}
-  //      """.stripMargin, dep1, dep2)
-  //    assert(a.read(JsPath(), Json.obj("age" -> 5, "extra" -> JsNull )) == JsError(JsPath() \ "extra" , ValidationError("field.default.invalid_return_type")))
-  //  }
+  ignore should "return error if one of dependant type miss match with its field type" in {
+    val dep1 = ValueField("age", DataType.RLong, Some("""age < 100"""), Some("""50"""), true)
+    val dep2 = ValueField("extra", DataType.RLong, None, Some("""50.5443"""), true)
+    val a = CalculatedField2("spatialAge", DataType.RLong,
+      """
+            |function calculate(age, extra) {
+            |  return extra + age ;
+            |}
+          """.stripMargin, dep1, dep2)
+    assert(a.read(JsPath(), Json.obj("age" -> 5, "extra" -> JsNull)) == JsError(JsPath() \ "extra", ValidationError("field.default.invalid_return_type")))
+  }
 
   "ReferenceField" should "parse correctly" in {
     val a = ReferenceField("creator", true, R("/users"), List("firstName", "lastName"))

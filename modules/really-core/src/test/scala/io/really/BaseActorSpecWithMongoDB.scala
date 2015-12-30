@@ -3,20 +3,22 @@
  */
 package io.really
 
-import com.github.simplyscala.{ MongodProps, MongoEmbedDatabase }
+import com.github.simplyscala.{ MongodProps }
 import org.scalatest.BeforeAndAfterAll
 
-abstract class BaseActorSpecWithMongoDB(conf: ReallyConfig = TestConf.getConfig()) extends BaseActorSpec(conf)
-    with MongoEmbedDatabase with BeforeAndAfterAll {
-  private var mongoProps: MongodProps = null
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
-  override def beforeAll() = {
-    mongoProps = mongoStart()
+abstract class BaseActorSpecWithMongoDB(conf: ReallyConfig = TestConf.getConfig())
+    extends BaseActorSpec(conf) with BeforeAndAfterAll {
+
+  override def beforeAll(): Unit = {
     super.beforeAll()
   }
 
-  override def afterAll() = {
-    mongoStop(mongoProps)
+  override def afterAll(): Unit = {
+    println("Cleaning Up Database")
+    Await.result(globals.mongodbConnection.drop(), 15.seconds)
     super.afterAll()
   }
 

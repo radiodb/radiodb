@@ -58,7 +58,7 @@ case class CalculatedField1[T, A](
 
   def inputs(in: JsObject): List[Object] = {
     val dep1Value = in \ dep1.key
-    List(dep1.dataType.valueAsOpt(dep1Value).map(_.asInstanceOf[Object]).getOrElse(undefined))
+    List(dep1.dataType.valueAsOpt(dep1Value).map(JsTools.translateJsonToJava(_)).getOrElse(undefined))
   }
 }
 
@@ -74,8 +74,8 @@ case class CalculatedField2[T, A, B](
     val dep1Value = in \ dep1.key
     val dep2Value = in \ dep2.key
     List(
-      dep1.dataType.valueAsOpt(dep1Value).map(_.asInstanceOf[Object]).getOrElse(undefined),
-      dep2.dataType.valueAsOpt(dep2Value).map(_.asInstanceOf[Object]).getOrElse(undefined)
+      dep1.dataType.valueAsOpt(dep1Value).map(JsTools.translateJsonToJava(_)).getOrElse(undefined),
+      dep2.dataType.valueAsOpt(dep2Value).map(JsTools.translateJsonToJava(_)).getOrElse(undefined)
     )
   }
 }
@@ -93,9 +93,9 @@ case class CalculatedField3[T, A, B, C](
     val dep2Value = in \ dep2.key
     val dep3Value = in \ dep3.key
     List(
-      dep1.dataType.valueAsOpt(dep1Value).map(_.asInstanceOf[Object]).getOrElse(undefined),
-      dep2.dataType.valueAsOpt(dep2Value).map(_.asInstanceOf[Object]).getOrElse(undefined),
-      dep3.dataType.valueAsOpt(dep3Value).map(_.asInstanceOf[Object]).getOrElse(undefined)
+      dep1.dataType.valueAsOpt(dep1Value).map(JsTools.translateJsonToJava(_)).getOrElse(undefined),
+      dep2.dataType.valueAsOpt(dep2Value).map(JsTools.translateJsonToJava(_)).getOrElse(undefined),
+      dep3.dataType.valueAsOpt(dep3Value).map(JsTools.translateJsonToJava(_)).getOrElse(undefined)
     )
   }
 }

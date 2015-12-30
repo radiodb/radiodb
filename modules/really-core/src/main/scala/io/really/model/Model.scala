@@ -6,6 +6,7 @@ package io.really
 import javax.script.{ ScriptEngineManager, ScriptException, ScriptContext, Invocable }
 import _root_.io.really.js.JsTools
 import _root_.io.really.model.ModelExceptions.{ InvalidSubCollectionR, InvalidCollectionR }
+import _root_.io.really.js._
 import play.api.libs.json._
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory
 import scala.util.control.NonFatal
@@ -102,11 +103,8 @@ package object model {
       }.toMap
 
     @transient
-    lazy val factory = new NashornScriptEngineFactory
-    @transient
     lazy val executeValidator: Option[Validator] = jsHooks.onValidate.map { onValidateCode =>
-      val validateEngine = factory.getScriptEngine(Array("-strict", "--no-java", "--no-syntax-extensions"))
-      JsTools.injectSDK(validateEngine.getContext.getBindings(ScriptContext.ENGINE_SCOPE))
+      val validateEngine = JsTools.newEngineWithSDK()
 
       val codeTemplate =
         s"""
@@ -122,31 +120,31 @@ package object model {
     }
 
     @transient
-    lazy val executeOnGetValidator: Option[OnGet] = jsHooks.preGet.map { onGetCode =>
-      val jsEngine = JsTools.newEngineWithSDK()
-      val code: String = s"""
-        | function onGet (_authValue, _objValue, _underlyingHide) {
-        |  var hide = function() {
-        |    var fields = Array.prototype.slice.call(arguments);
-        |    _underlyingHide(fields);
-        |  }
-        |
-        |   var auth = JSON.parse(_authValue);
-        |   _authValue = undefined;
-        |   var obj = JSON.parse(_objValue);
-        |   _objValue = undefined;
-        |   ${onGetCode}
-        | }
-      """.stripMargin
-      jsEngine.eval(code)
+    lazy val executeOnGetValidator: Option[OnGet] = jsHooks.preGet.map {
+      onGetCode =>
+        val jsEngine = JsTools.newEngineWithSDK()
+        val code: String = s"""
+          | function onGet (_authValue, _objValue, _underlyingHide) {
+          |  var hide = function() {
+          |    var fields = Array.prototype.slice.call(arguments);
+          |    _underlyingHide(fields);
+          |  }
+          |
+          |   var auth = JSON.parse(_authValue);
+          |   _authValue = undefined;
+          |   var obj = JSON.parse(_objValue);
+          |   _objValue = undefined;
+          |   ${onGetCode}
+          | }
+          """.stripMargin
+        jsEngine.eval(code)
 
-      jsEngine.asInstanceOf[Invocable].getInterface(classOf[OnGet])
+        jsEngine.asInstanceOf[Invocable].getInterface(classOf[OnGet])
     }
 
     @transient
     lazy val executePreDeleteValidator: Option[PreDelete] = jsHooks.preDelete.map { preDeleteCode =>
-      val validateEngine = factory.getScriptEngine(Array("-strict", "--no-java", "--no-syntax-extensions"))
-      JsTools.injectSDK(validateEngine.getContext.getBindings(ScriptContext.ENGINE_SCOPE))
+      val validateEngine = JsTools.newEngineWithSDK()
 
       val codeTemplate =
         s"""
@@ -163,8 +161,7 @@ package object model {
 
     @transient
     lazy val executePreUpdateValidator: Option[PreUpdate] = jsHooks.preUpdate.map { preUpdateCode =>
-      val validateEngine = factory.getScriptEngine(Array("-strict", "--no-java", "--no-syntax-extensions"))
-      JsTools.injectSDK(validateEngine.getContext.getBindings(ScriptContext.ENGINE_SCOPE))
+      val validateEngine = JsTools.newEngineWithSDK()
 
       val codeTemplate =
         s"""
@@ -194,8 +191,7 @@ package object model {
               //TODO Log the error
               println("Validation Script Execution Error: " + se)
               ModelHookStatus.Terminated(500, "Validation script throws a runtime error")
-          }
-        case None => ModelHookStatus.Succeeded
+          } case None => ModelHookStatus.Succeeded
       }
     }
 
@@ -208,13 +204,21 @@ package object model {
             val protectedFields = hiddenFields.getHiddenFields.filter(fields.keySet.contains)
             Right(FieldProtectionPlan(protectedFields.toSet))
           } catch {
-            case e: ArrayStoreException =>
-              Left(ModelHookStatus.Terminated(9000, "preGet contain hide function with invalid args."))
             case se: ScriptException =>
               globals.logger.error(s"Script Exception happen during execute `preGet` for Model with r: ${r}, error: ${se.getMessage}")
-              Left(ModelHookStatus.Terminated(500, "preGet script throws a runtime error"))
+              Left(ModelHookStatus.Terminated(
+                500,
+                s"preGet script error: ${se.getMessage}"
+              ))
+            case ie: SDKException =>
+              globals.logger.error(s"SDK Exception happen during execute `preGet` for Model with r: ${r}, error: ${ie.getMessage}")
+              Left(ModelHookStatus.Terminated(
+                600,
+                s"preGet sdk error: ${ie.getMessage}"
+              ))
+
             case NonFatal(e) =>
-              globals.logger.error(s"Script Exception happen during execute `preGet` for Model with r: ${r}, error: ${e.getMessage}")
+              globals.logger.error(s"Unknown Exception happen during execute `preGet` for Model with r: ${r}, error: ${e.getMessage}")
               Left(ModelHookStatus.Terminated(500, "preGet script throws a runtime error"))
           }
         case None =>

@@ -47,8 +47,8 @@ class WebSocketHandlerSpec extends BaseIOActorSpec {
     )
     wsHandler ! "{{{}"
     val em = client.expectMsgType[JsValue]
-    em \ "error" \ "code" shouldBe JsNumber(400)
-    em \ "error" \ "message" shouldBe JsString("json.malformed")
+    (em \ "error" \ "code").get shouldBe JsNumber(400)
+    (em \ "error" \ "message").get shouldBe JsString("json.malformed")
 
     val probe = TestProbe()
     probe watch wsHandler
@@ -76,8 +76,8 @@ class WebSocketHandlerSpec extends BaseIOActorSpec {
         }"""
     handler ! invalid_initialize_msg
     val em = client.expectMsgType[JsObject]
-    em \ "error" \ "code" shouldBe JsNumber(400)
-    em \ "error" \ "message" shouldBe JsString("initialize.invalid")
+    (em \ "error" \ "code").get shouldBe JsNumber(400)
+    (em \ "error" \ "message").get shouldBe JsString("initialize.invalid")
   }
 
   it should "fail to initialize with invalid command request" in {
@@ -100,8 +100,8 @@ class WebSocketHandlerSpec extends BaseIOActorSpec {
         }"""
     handler ! invalid_initialize_msg
     val em = client.expectMsgType[JsValue]
-    em \ "error" \ "code" shouldBe JsNumber(400)
-    em \ "error" \ "message" shouldBe JsString("initialize.required")
+    (em \ "error" \ "code").get shouldBe JsNumber(400)
+    (em \ "error" \ "message").get shouldBe JsString("initialize.required")
   }
 
   it should "fail to initialize with invalid token" in {
@@ -125,8 +125,8 @@ class WebSocketHandlerSpec extends BaseIOActorSpec {
         }"""
     handler ! invalid_initialize_msg
     val em = client.expectMsgType[JsValue]
-    em \ "error" \ "code" shouldBe JsNumber(401)
-    em \ "error" \ "message" shouldBe JsString("token.invalid")
+    (em \ "error" \ "code").get shouldBe JsNumber(401)
+    (em \ "error" \ "message").get shouldBe JsString("token.invalid")
 
   }
 
@@ -150,7 +150,7 @@ class WebSocketHandlerSpec extends BaseIOActorSpec {
         }"""
     handler ! valid_initialize_msg
     val em = client.expectMsgType[JsValue]
-    em \ "evt" shouldBe JsString("initialized")
+    (em \ "evt").get shouldBe JsString("initialized")
   }
 
   it should "fail if the token is expired" in {
@@ -175,7 +175,7 @@ class WebSocketHandlerSpec extends BaseIOActorSpec {
         }"""
     handler ! valid_initialize_msg
     val em = client.expectMsgType[JsValue]
-    em \ "error" \ "code" shouldBe JsNumber(401)
-    em \ "error" \ "message" shouldBe JsString("token.expired")
+    (em \ "error" \ "code").get shouldBe JsNumber(401)
+    (em \ "error" \ "message").get shouldBe JsString("token.expired")
   }
 }

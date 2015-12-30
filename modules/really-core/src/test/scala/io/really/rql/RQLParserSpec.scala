@@ -40,7 +40,7 @@ class RQLParserSpec extends FlatSpec with Matchers {
     val result = RQLParser.parse(q, v)
     result.isLeft shouldBe true
     val error = result.left.get
-    error.message shouldBe "at: 1.12 parser error: string matching regex `\\z' expected but `n' found"
+    error.message shouldBe "at: 1.12 parser error: missing AND operator"
   }
 
   it should "parse '=' operator" in {

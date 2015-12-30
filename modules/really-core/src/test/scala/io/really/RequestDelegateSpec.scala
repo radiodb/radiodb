@@ -30,7 +30,7 @@ class RequestDelegateSpec extends BaseActorSpec {
         "message" -> "validation.failed",
         "errors" -> Json.obj(
           "obj.r" -> Seq(Json.obj(
-            "msg" -> "error.path.missing",
+            "msg" -> Seq("error.path.missing"),
             "args" -> Seq.empty[String]
           ))
         )

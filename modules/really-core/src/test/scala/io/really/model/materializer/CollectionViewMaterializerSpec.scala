@@ -7,7 +7,6 @@ import akka.actor.{ ActorRef, Props }
 import akka.persistence.{ Update, RecoveryCompleted }
 import akka.testkit.{ TestProbe, TestActorRef }
 import io.really.fixture.{ CollectionActorTest, PersistentModelStoreFixture, MaterializerTest }
-import _root_.io.really.json.collection.JSONCollection
 import io.really.model._
 import io.really.model.persistent.ModelRegistry.RequestModel.GetModel
 import io.really.model.persistent.ModelRegistry.{ ModelOperation, ModelResult }
@@ -15,6 +14,8 @@ import io.really.model.persistent.PersistentModelStore
 import io.really.protocol._
 import io.really._
 import play.api.libs.json._
+import play.modules.reactivemongo.json.collection._
+import play.modules.reactivemongo.json._
 import reactivemongo.api.Cursor
 import scala.concurrent.duration._
 
@@ -28,7 +29,7 @@ class CollectionViewMaterializerSpec extends BaseActorSpecWithMongoDB {
 
   def getObject(r: R, collection: JSONCollection = auhtorsCollection): Option[JsObject] = {
     val query = Json.obj("_r" -> r)
-    val cursor: Cursor[JsObject] = collection.find(query).cursor[JsObject]
+    val cursor: Cursor[JsObject] = collection.find(query).cursor[JsObject]()
     Await.result(cursor.headOption, 5.seconds)
   }
 

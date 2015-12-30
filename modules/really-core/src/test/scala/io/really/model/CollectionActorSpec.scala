@@ -92,9 +92,9 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, r, userObj), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[CollectionActor.State]
-    state.obj \ "name" shouldBe JsString("Hatem AlSum")
-    state.obj \ "age" shouldBe JsNumber(30)
-    state.obj \ "_rev" shouldBe JsNumber(1)
+    (state.obj \ "name").get shouldBe JsString("Hatem AlSum")
+    (state.obj \ "age").get shouldBe JsNumber(30)
+    (state.obj \ "_rev").get shouldBe JsNumber(1)
 
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("address" -> ValueField("address", DataType.RString, None, None, true))
@@ -179,8 +179,8 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     collectionActor.tell(Create(ctx, r, userObj), probe.ref)
     collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[CollectionActor.State]
-    state.obj \ "name" shouldBe JsString("Montaro")
-    state.obj \ "age" shouldBe JsNumber(23)
+    (state.obj \ "name").get shouldBe JsString("Montaro")
+    (state.obj \ "age").get shouldBe JsNumber(23)
 
     probe watch collectionActor
     collectionActor ! PoisonPill
@@ -189,8 +189,8 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     val collectionActorx = system.actorOf(Props(new CollectionActorTest(globals)), actorName)
     collectionActorx.tell(GetState(r), probe.ref)
     val statex = probe.expectMsgType[CollectionActor.State]
-    statex.obj \ "name" shouldBe JsString("Montaro")
-    statex.obj \ "age" shouldBe JsNumber(23)
+    (statex.obj \ "name").get shouldBe JsString("Montaro")
+    (statex.obj \ "age").get shouldBe JsNumber(23)
     system.stop(collectionActor)
     system.stop(collectionActorx)
   }
@@ -207,7 +207,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     collectionActor.tell(Update(ctx, r, 1l, body), probe.ref)
     collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[CollectionActor.State]
-    (state.obj \ "name").as[String] shouldEqual "Amal"
+    (state.obj \ "name").get.as[String] shouldEqual "Amal"
     probe watch collectionActor
     collectionActor ! PoisonPill
     probe.expectTerminated(collectionActor)
@@ -227,9 +227,9 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, r, userObj), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[State]
-    state.obj \ "name" shouldBe JsString("Hatem AlSum")
-    state.obj \ "age" shouldBe JsNumber(30)
-    state.obj \ "_rev" shouldBe JsNumber(1)
+    (state.obj \ "name").get shouldBe JsString("Hatem AlSum")
+    (state.obj \ "age").get shouldBe JsNumber(30)
+    (state.obj \ "_rev").get shouldBe JsNumber(1)
   }
 
   it should "reply with AlreadyExists is the object was already created" in {
@@ -258,7 +258,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, r, userObj), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[State]
-    state.obj \ "production" shouldBe JsNumber(1980)
+    (state.obj \ "production").get shouldBe JsNumber(1980)
 
   }
 
@@ -269,7 +269,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, r, userObj), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[State]
-    state.obj \ "renewal" shouldBe JsNumber(2020)
+    (state.obj \ "renewal").get shouldBe JsNumber(2020)
 
   }
 
@@ -280,7 +280,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, r, userObj), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[State]
-    state.obj \ "renewal" shouldBe JsNumber(1990)
+    (state.obj \ "renewal").get shouldBe JsNumber(1990)
 
   }
 
@@ -291,7 +291,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, r, userObj), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[State]
-    state.obj \ "_r" shouldBe JsString(r.toString)
+    (state.obj \ "_r").get shouldBe JsString(r.toString)
   }
 
   it should "have the object revision as a part of the state" in {
@@ -301,7 +301,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, r, userObj), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[State]
-    state.obj \ "_rev" shouldBe JsNumber(1)
+    (state.obj \ "_rev").get shouldBe JsNumber(1)
   }
 
   it should "validate that model is not found" in {
@@ -322,7 +322,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, cr, postObj), probe.ref)
     globals.collectionActor.tell(GetState(cr), probe.ref)
     val state1 = probe.expectMsgType[State]
-    (state1.obj \ "_r").as[R] shouldEqual cr
+    (state1.obj \ "_r").get.as[R] shouldEqual cr
 
   }
 
@@ -411,10 +411,10 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Create(ctx, userR, userObj), probe.ref)
     globals.collectionActor.tell(GetState(userR), probe.ref)
     val state1 = probe.expectMsgType[State]
-    (state1.obj \ "_r").as[R] shouldEqual userR
-    (state1.obj \ "name").as[String] shouldEqual "Ahmed"
-    (state1.obj \ "age").as[Int] shouldEqual 30
-    (state1.obj \ "company").as[R] shouldEqual companyR
+    (state1.obj \ "_r").get.as[R] shouldEqual userR
+    (state1.obj \ "name").get.as[String] shouldEqual "Ahmed"
+    (state1.obj \ "age").get.as[Int] shouldEqual 30
+    (state1.obj \ "company").get.as[R] shouldEqual companyR
 
   }
 
@@ -476,7 +476,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Update(ctx, r, 1l, body), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state1 = probe.expectMsgType[State]
-    (state1.obj \ "name").as[String] shouldEqual "Amal"
+    (state1.obj \ "name").get.as[String] shouldEqual "Amal"
   }
 
   it should "fail the data revision is lower than the field last touched revision and operation is Set operation" in {
@@ -503,12 +503,12 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Update(ctx, r, 1l, body), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state1 = probe.expectMsgType[State]
-    (state1.obj \ "age").as[Int] shouldEqual 29
+    (state1.obj \ "age").get.as[Int] shouldEqual 29
 
     globals.collectionActor.tell(Update(ctx, r, 1l, body), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state2 = probe.expectMsgType[State]
-    (state2.obj \ "age").as[Int] shouldEqual 31
+    (state2.obj \ "age").get.as[Int] shouldEqual 31
   }
 
   it should "fail when sending an invalid value for AddNumber Operation" in {
@@ -547,7 +547,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Update(ctx, r, 1l, body), probe.ref)
     globals.collectionActor.tell(GetState(r), probe.ref)
     val state = probe.expectMsgType[State]
-    (state.obj \ "age").as[Int] shouldEqual 28
+    (state.obj \ "age").get.as[Int] shouldEqual 28
   }
 
   it should "update the calculated Fields too" in {
@@ -719,7 +719,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
 
     collectionActorTest.tell(GetState(userR), probe.ref)
     val state = probe.expectMsgType[State]
-    assertResult(None)((state.obj \ "company").asOpt[R])
+    assertResult(None)((state.obj \ "company").get.asOpt[R])
   }
 
   it should "allow only set operation on reference field" in {
@@ -767,7 +767,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
     globals.collectionActor.tell(Delete(ctx, r), self)
     globals.collectionActor.tell(GetState(r), self)
     val state1 = expectMsgType[State]
-    (state1.obj \ "_deleted").as[Boolean] shouldEqual true
+    (state1.obj \ "_deleted").get.as[Boolean] shouldEqual true
 
   }
 

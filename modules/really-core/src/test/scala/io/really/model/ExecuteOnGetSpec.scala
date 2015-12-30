@@ -75,7 +75,11 @@ class ExecuteOnGetSpec extends BaseActorSpec {
 
     val model = BaseActorSpec.userModel.copy(jsHooks = JsHooks(None, preGet = Some(onGetJs), None, None, None, None, None))
 
-    model.executeOnGet(context, globals, input) should be(Left(ModelHookStatus.Terminated(9000, "preGet contain hide function with invalid args.")))
+    model.executeOnGet(context, globals, input) should
+      be(Left(ModelHookStatus.Terminated(
+        600,
+        "preGet sdk error: hide() expects strings only."
+      )))
   }
 
 }

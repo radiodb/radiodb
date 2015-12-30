@@ -4,14 +4,14 @@
 package io.really.model.materializer
 
 import io.really._
-import _root_.io.really.json.collection.JSONCollection
 import _root_.io.really.model.{ ModelVersion, Model }
 import org.joda.time.DateTime
-import play.api.libs.json.{ Json, JsObject }
+import play.api.libs.json._
 import reactivemongo.api.Cursor
 import reactivemongo.api.indexes.{ IndexType, Index }
 import reactivemongo.core.errors.DatabaseException
-
+import play.modules.reactivemongo.json._
+import play.modules.reactivemongo.json.collection._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
@@ -54,7 +54,7 @@ trait MongoStorage {
    */
   def getObject(r: R, collection: JSONCollection = collection): Future[DBResponse] = {
     val query = Json.obj("_r" -> r)
-    val cursor: Cursor[JsObject] = collection.find(query).cursor[JsObject]
+    val cursor: Cursor[JsObject] = collection.find(query).cursor[JsObject]()
     cursor.headOption map {
       case Some(obj) =>
         OperationSucceeded(r, obj)
@@ -101,7 +101,7 @@ trait MongoStorage {
   def updateObject(obj: JsObject, objRevision: Revision, modelVersion: ModelVersion): Future[DBResponse] = {
     val newObj = addMetaData(obj, objRevision, modelVersion)
     val r = (obj \ "_r").as[R]
-    collection.save(newObj) map {
+    collection.update(Json.obj("_r" -> r), newObj) map {
       case lastError if lastError.ok =>
         OperationSucceeded(r, newObj)
       case lastError =>
@@ -123,7 +123,7 @@ trait MongoStorage {
   def deleteObject(obj: JsObject, objRevision: Revision, modelVersion: ModelVersion): Future[DBResponse] = {
     val deletedObj = addMetaData(obj, objRevision, modelVersion)
     val r = (obj \ "_r").as[R]
-    collection.save(deletedObj) map {
+    collection.update(Json.obj("_r" -> r), deletedObj) map {
       case lastError if lastError.ok =>
         OperationSucceeded(r, deletedObj)
       case lastError =>

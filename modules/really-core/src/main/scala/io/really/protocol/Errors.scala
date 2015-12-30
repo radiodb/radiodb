@@ -17,7 +17,7 @@ object ProtocolError {
    */
   object Error {
     implicit val jsErrWrites = new Writes[JsError] {
-      override def writes(e: JsError): JsValue = JsError.toFlatJson(e)
+      override def writes(e: JsError): JsValue = JsError.toJson(e)
     }
     implicit val writes = Json.writes[Error]
   }

@@ -5,7 +5,7 @@
 package io.really.gorilla
 
 import akka.actor._
-import akka.contrib.pattern.DistributedPubSubMediator.Unsubscribe
+import akka.cluster.pubsub.DistributedPubSubMediator.Unsubscribe
 import akka.util.Timeout
 import io.really.model.Model
 import io.really.gorilla.Replayer.SnapshotResult._

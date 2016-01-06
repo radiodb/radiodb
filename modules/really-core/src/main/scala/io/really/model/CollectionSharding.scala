@@ -3,7 +3,7 @@
  */
 package io.really.model
 
-import akka.contrib.pattern.ShardRegion
+import akka.cluster.sharding.ShardRegion
 import _root_.io.really.{ RoutableToCollectionActor, ReallyConfig }
 
 class CollectionSharding(config: ReallyConfig) {
@@ -15,14 +15,14 @@ class CollectionSharding(config: ReallyConfig) {
    * ID Extractor for Akka Sharding extension
    * ID is the BucketId
    */
-  val idExtractor: ShardRegion.IdExtractor = {
+  val idExtractor: ShardRegion.ExtractEntityId = {
     case req: RoutableToCollectionActor => Helpers.getBucketIDFromR(req.r) -> req
   }
 
   /**
    * Shard Resolver for Akka Sharding extension
    */
-  val shardResolver: ShardRegion.ShardResolver = {
+  val shardResolver: ShardRegion.ExtractShardId = {
     case req: RoutableToCollectionActor => (Helpers.getBucketIDFromR(req.r).hashCode % maxShards).toString
   }
 }

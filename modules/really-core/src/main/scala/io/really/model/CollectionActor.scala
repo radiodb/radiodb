@@ -4,7 +4,7 @@
 package io.really.model
 
 import akka.actor._
-import akka.contrib.pattern.ShardRegion.Passivate
+import akka.cluster.sharding.ShardRegion.Passivate
 import akka.persistence._
 import io.really.CommandError._
 import io.really.Request.{ Update, Create, Delete }

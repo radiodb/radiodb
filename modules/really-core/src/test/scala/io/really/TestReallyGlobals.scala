@@ -6,7 +6,6 @@ package io.really
 import java.util.concurrent.atomic.AtomicReference
 
 import akka.actor.{ ActorSystem, Props, ActorRef }
-import akka.contrib.pattern.{ DistributedPubSubExtension, ClusterSharding }
 import _root_.io.really.gorilla.{ SubscriptionManager, GorillaEventCenterSharding, GorillaEventCenter }
 import _root_.io.really.model.ReadHandler
 import _root_.io.really.fixture.{ PersistentModelStoreFixture, CollectionActorWithCleanJournal }
@@ -15,6 +14,8 @@ import _root_.io.really.model.CollectionSharding
 import _root_.io.really.quickSand.QuickSand
 import _root_.io.really.model.persistent.{ ModelRegistry, RequestRouter }
 import _root_.io.really.model.materializer.MaterializerSharding
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.sharding.{ ClusterShardingSettings, ClusterSharding }
 import akka.event.Logging
 import _root_.io.really.fixture._
 import _root_.io.really.gorilla.ObjectSubscriber
@@ -23,6 +24,8 @@ import _root_.io.really.gorilla._
 import play.api.libs.json.JsObject
 import reactivemongo.api.{ DefaultDB, MongoDriver }
 import scala.collection.JavaConversions._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.slick.driver.H2Driver.simple._
 
 class TestReallyGlobals(override val config: ReallyConfig, override val actorSystem: ActorSystem) extends ReallyGlobals {
@@ -73,7 +76,9 @@ class TestReallyGlobals(override val config: ReallyConfig, override val actorSys
 
   override val collectionActorProps = Props(classOf[CollectionActorWithCleanJournal], this)
   override val subscriptionManagerProps = Props(classOf[SubscriptionManager], this)
+
   override def materializerProps = Props(classOf[CollectionViewMaterializer], this)
+
   override val persistentModelStoreProps = Props(classOf[PersistentModelStoreFixture], this, modelRegistryPersistentId)
 
   override def objectSubscriberProps(rSubscription: RSubscription): Props =
@@ -100,28 +105,31 @@ class TestReallyGlobals(override val config: ReallyConfig, override val actorSys
     val collectionSharding = new CollectionSharding(config)
     collectionActor_.set(ClusterSharding(actorSystem).start(
       typeName = "CollectionActor",
-      entryProps = Some(collectionActorProps),
-      idExtractor = collectionSharding.idExtractor,
-      shardResolver = collectionSharding.shardResolver
+      entityProps = collectionActorProps,
+      settings = ClusterShardingSettings(actorSystem),
+      extractEntityId = collectionSharding.idExtractor,
+      extractShardId = collectionSharding.shardResolver
     ))
 
     val gorillaEventCenterSharding = new GorillaEventCenterSharding(config)
 
     gorillaEventCenter_.set(ClusterSharding(actorSystem).start(
       typeName = "GorillaEventCenter",
-      entryProps = Some(gorillaEventCenterProps),
-      idExtractor = gorillaEventCenterSharding.idExtractor,
-      shardResolver = gorillaEventCenterSharding.shardResolver
+      entityProps = gorillaEventCenterProps,
+      settings = ClusterShardingSettings(actorSystem),
+      extractEntityId = gorillaEventCenterSharding.idExtractor,
+      extractShardId = gorillaEventCenterSharding.shardResolver
     ))
 
     val materializerSharding = new MaterializerSharding(config)
     materializer_.set(ClusterSharding(actorSystem).start(
       typeName = "MaterializerView",
-      entryProps = Some(materializerProps),
-      idExtractor = materializerSharding.idExtractor,
-      shardResolver = materializerSharding.shardResolver
+      entityProps = materializerProps,
+      settings = ClusterShardingSettings(actorSystem),
+      extractEntityId = materializerSharding.idExtractor,
+      extractShardId = materializerSharding.shardResolver
     ))
-    mediator_.set(DistributedPubSubExtension(actorSystem).mediator)
+    mediator_.set(DistributedPubSub(actorSystem).mediator)
 
     subscriptionManager_.set(actorSystem.actorOf(subscriptionManagerProps, "subscription-manager"))
 
@@ -130,7 +138,6 @@ class TestReallyGlobals(override val config: ReallyConfig, override val actorSys
   }
 
   override def shutdown() = {
-    actorSystem.shutdown()
-    actorSystem.awaitTermination()
+    Await.result(actorSystem.terminate(), 30.seconds)
   }
 }

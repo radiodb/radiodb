@@ -5,7 +5,7 @@ package io.really.boot
 
 import java.util.concurrent.atomic.AtomicReference
 import akka.actor._
-import akka.contrib.pattern.DistributedPubSubExtension
+import akka.cluster.pubsub.DistributedPubSub
 import _root_.io.really.gorilla._
 import _root_.io.really.model.materializer.{ MaterializerSharding, CollectionViewMaterializer }
 import akka.event.Logging
@@ -13,9 +13,10 @@ import _root_.io.really.model.ReadHandler
 import _root_.io.really.model.persistent.{ ModelRegistry, RequestRouter, PersistentModelStore }
 import reactivemongo.api.{ DefaultDB, MongoDriver }
 import scala.collection.JavaConversions._
-
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.slick.driver.H2Driver.simple._
-import akka.contrib.pattern.ClusterSharding
+import akka.cluster.sharding.{ ClusterShardingSettings, ClusterSharding }
 import _root_.io.really._
 import _root_.io.really.model.{ CollectionSharding, CollectionActor }
 import play.api.libs.json.JsObject
@@ -90,28 +91,31 @@ class DefaultReallyGlobals(override val config: ReallyConfig) extends ReallyGlob
     val collectionSharding = new CollectionSharding(config)
     collectionActor_.set(ClusterSharding(actorSystem).start(
       typeName = "CollectionActor",
-      entryProps = Some(collectionActorProps),
-      idExtractor = collectionSharding.idExtractor,
-      shardResolver = collectionSharding.shardResolver
+      entityProps = collectionActorProps,
+      settings = ClusterShardingSettings(actorSystem),
+      extractEntityId = collectionSharding.idExtractor,
+      extractShardId = collectionSharding.shardResolver
     ))
 
     val gorillaEventCenterSharding = new GorillaEventCenterSharding(config)
     gorillaEventCenter_.set(ClusterSharding(actorSystem).start(
       typeName = "GorillaEventCenter",
-      entryProps = Some(gorillaEventCenterProps),
-      idExtractor = gorillaEventCenterSharding.idExtractor,
-      shardResolver = gorillaEventCenterSharding.shardResolver
+      entityProps = gorillaEventCenterProps,
+      settings = ClusterShardingSettings(actorSystem),
+      extractEntityId = gorillaEventCenterSharding.idExtractor,
+      extractShardId = gorillaEventCenterSharding.shardResolver
     ))
 
     val materializerSharding = new MaterializerSharding(config)
     materializer_.set(ClusterSharding(actorSystem).start(
       typeName = "MaterializerView",
-      entryProps = Some(materializerProps),
-      idExtractor = materializerSharding.idExtractor,
-      shardResolver = materializerSharding.shardResolver
+      entityProps = materializerProps,
+      settings = ClusterShardingSettings(actorSystem),
+      extractEntityId = materializerSharding.idExtractor,
+      extractShardId = materializerSharding.shardResolver
     ))
 
-    mediator_.set(DistributedPubSubExtension(actorSystem).mediator)
+    mediator_.set(DistributedPubSub(actorSystem).mediator)
 
     subscriptionManager_.set(actorSystem.actorOf(subscriptionManagerProps, "subscription-manager"))
 
@@ -125,7 +129,6 @@ class DefaultReallyGlobals(override val config: ReallyConfig) extends ReallyGlob
     Props(new Replayer(this, objectSubscriber, rSubscription, maxMarker)(session))
 
   override def shutdown(): Unit = {
-    actorSystem.shutdown()
-    actorSystem.awaitTermination()
+    Await.result(actorSystem.terminate(), 30.seconds)
   }
 }

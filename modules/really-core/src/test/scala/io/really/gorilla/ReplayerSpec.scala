@@ -5,7 +5,7 @@
 package io.really.gorilla
 
 import akka.actor.{ Actor, ActorRef, Props }
-import akka.contrib.pattern.DistributedPubSubMediator.{ Subscribe, Publish }
+import akka.cluster.pubsub.DistributedPubSubMediator.{ Publish, Subscribe }
 import akka.persistence.{ Update => PersistenceUpdate }
 import io.really.fixture.GorillaEventCenterFixture.GetState
 import io.really.fixture.PersistentModelStoreFixture

@@ -1,11 +1,11 @@
 language: scala
+sudo: required
+dist: trusty
+jdk:
+  - oraclejdk8
 scala:
   - 2.11.7
 sudo: false
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
 sbt_args:  -J-Xms1600m -J-Xmx1600m -J-XX:MaxMetaspaceSize=1024m
 services:
     - mongodb

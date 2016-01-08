@@ -3,6 +3,10 @@ sudo: required
 dist: trusty
 jdk:
   - oraclejdk8
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
 scala:
   - 2.11.7
 sudo: false

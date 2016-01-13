@@ -290,5 +290,4 @@ case class ModelInfo(
   fields: LinkedHashMap[String, Object],
   jsHooks: JsHooks,
   migrationPlan: MigrationPlan,
-  subCollectionsR: List[R]
-)
+  subCollectionsR: List[R])

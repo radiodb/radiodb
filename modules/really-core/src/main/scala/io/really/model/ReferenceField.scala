@@ -10,8 +10,7 @@ case class ReferenceField(
     key: FieldKey,
     required: Boolean,
     collectionR: R,
-    fields: List[FieldKey]
-) extends Field[R] {
+    fields: List[FieldKey]) extends Field[R] {
 
   val dataType = DataType.Reference
 

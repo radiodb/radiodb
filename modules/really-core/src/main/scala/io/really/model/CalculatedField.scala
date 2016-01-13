@@ -52,8 +52,7 @@ case class CalculatedField1[T, A](
     key: FieldKey,
     dataType: DataType[T],
     calculatorExpression: JsScript,
-    dep1: ActiveField[A]
-) extends CalculatedField[T] {
+    dep1: ActiveField[A]) extends CalculatedField[T] {
   val dependsOn = List(dep1.key)
 
   def inputs(in: JsObject): List[Object] = {
@@ -66,8 +65,7 @@ case class CalculatedField2[T, A, B](
     key: FieldKey,
     dataType: DataType[T],
     calculatorExpression: JsScript,
-    dep1: ActiveField[A], dep2: ActiveField[B]
-) extends CalculatedField[T] {
+    dep1: ActiveField[A], dep2: ActiveField[B]) extends CalculatedField[T] {
   val dependsOn = List(dep1.key, dep2.key)
 
   def inputs(in: JsObject): List[Object] = {
@@ -84,8 +82,7 @@ case class CalculatedField3[T, A, B, C](
     key: FieldKey,
     dataType: DataType[T],
     calculatorExpression: JsScript,
-    dep1: ActiveField[A], dep2: ActiveField[B], dep3: ActiveField[C]
-) extends CalculatedField[T] {
+    dep1: ActiveField[A], dep2: ActiveField[B], dep3: ActiveField[C]) extends CalculatedField[T] {
   val dependsOn = List(dep1.key, dep2.key, dep3.key)
 
   def inputs(in: JsObject): List[Object] = {

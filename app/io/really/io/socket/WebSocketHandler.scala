@@ -18,8 +18,7 @@ class WebSocketHandler(
     ioGlobals: IOGlobals,
     coreGlobals: ReallyGlobals,
     header: RequestHeader,
-    actorOut: ActorRef
-) extends Actor with ActorLogging {
+    actorOut: ActorRef) extends Actor with ActorLogging {
 
   import _root_.io.really.protocol.ProtocolFormats.CommandErrorWrites._
 
@@ -138,7 +137,6 @@ object WebSocketHandler {
   def props(
     ioGlobals: IOGlobals,
     coreGlobals: ReallyGlobals,
-    header: RequestHeader
-  )(actorOut: ActorRef): Props =
+    header: RequestHeader)(actorOut: ActorRef): Props =
     Props(new WebSocketHandler(ioGlobals, coreGlobals, header, actorOut))
 }

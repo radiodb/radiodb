@@ -78,11 +78,11 @@ class SubscribeAggregatorSpec(config: ReallyConfig) extends BaseActorSpec(config
     val rSub = SubscribeOnObjects(ctx, body, pushChannel.ref)
     EventFilter.warning(
       message = s"Subscribe Aggregator timed out while waiting the subscriptions to be fulfilled for requester:" +
-      s" ${delegate.ref}",
+        s" ${delegate.ref}",
       occurrences = 1
     ).intercept {
-      TestActorRef[SubscribeAggregator](Props(new SubscribeAggregator(rSub, delegate.ref, manager, globals)))
-    }
+        TestActorRef[SubscribeAggregator](Props(new SubscribeAggregator(rSub, delegate.ref, manager, globals)))
+      }
     delegate.expectMsg(SubscribeResult(Set.empty))
   }
 

@@ -11,8 +11,7 @@ case class SequenceField[T](
     dataType: DataType[T],
     validationExpression: Option[JsScript],
     default: Option[JsScript],
-    required: Boolean
-)(implicit val globals: ReallyGlobals) extends ActiveField[T] {
+    required: Boolean)(implicit val globals: ReallyGlobals) extends ActiveField[T] {
   override def read(root: JsPath, in: JsObject): JsResult[JsObject] = ???
 
   def runThroughValidator(path: JsPath, in: JsValue): JsResult[JsObject] = ???

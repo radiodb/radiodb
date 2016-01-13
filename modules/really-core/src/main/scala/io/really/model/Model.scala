@@ -37,8 +37,7 @@ package object model {
     preDelete: Option[JsScript],
     postCreate: Option[JsScript],
     postUpdate: Option[JsScript],
-    postDelete: Option[JsScript]
-  )
+    postDelete: Option[JsScript])
 
   case class MigrationPlan(scripts: Map[ModelVersion, JsScript]) {
     def migrate(from: ModelVersion, to: ModelVersion): JsObject => JsObject = ???
@@ -58,8 +57,7 @@ package object model {
       fields: Map[FieldKey, Field[_]],
       jsHooks: JsHooks,
       migrationPlan: MigrationPlan,
-      subCollections: List[R]
-  ) {
+      subCollections: List[R]) {
 
     if (!r.isCollection) throw new InvalidCollectionR(r)
     subCollections.foreach {

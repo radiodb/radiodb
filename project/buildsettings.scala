@@ -16,7 +16,8 @@ object BuildSettings {
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
       "krasserm at bintray" at "http://dl.bintray.com/krasserm/maven",
       "dnvriend at bintray" at "http://dl.bintray.com/dnvriend/maven",
-      "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
+      "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
+      "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     )
   ) ++ FormatSettings.settings
 }

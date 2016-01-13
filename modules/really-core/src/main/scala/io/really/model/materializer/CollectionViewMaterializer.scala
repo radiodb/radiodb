@@ -453,8 +453,7 @@ object CollectionViewMaterializer {
     model: Model,
     referencedCollections: Set[R],
     collectionEvent: CollectionActorEvent,
-    currentMessageNum: Long
-  ) extends MaterializerData
+    currentMessageNum: Long) extends MaterializerData
   case class ReferenceFieldsData(
     operation: DBOperation,
     obj: JsObject,
@@ -463,8 +462,7 @@ object CollectionViewMaterializer {
     received: Map[FieldKey, JsObject],
     expected: Map[R, FieldKey],
     collectionEvent: CollectionActorEvent,
-    currentMessageNum: Long
-  ) extends MaterializerData
+    currentMessageNum: Long) extends MaterializerData
 
   trait RoutableToMaterializer {
     def bucketId: BucketID

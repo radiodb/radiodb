@@ -90,9 +90,9 @@ class CollectionActor(globals: ReallyGlobals) extends PersistentActor
       log.debug(s"$persistenceId Persistor took to recover was {}ms", System.currentTimeMillis - t1)
       globals.modelRegistry ! GetModel(r, self)
 
-    case RecoveryFailure(cause) =>
-      log.error(s"$persistenceId Persistor failed to recover this cause: $cause")
-      context.parent ! Passivate(stopMessage = Stop)
+    //    case RecoveryFailure(cause) =>
+    //      log.error(s"$persistenceId Persistor failed to recover this cause: $cause")
+    //      context.parent ! Passivate(stopMessage = Stop)
   }
 
   override val receiveCommand: Receive = {
@@ -352,6 +352,7 @@ class CollectionActor(globals: ReallyGlobals) extends PersistentActor
         invalidReferences = invalid :+ expected(r)
       )
   }
+
   /**
    * This function is responsible for updating bucket from Collection Events
    * @param evt
@@ -534,6 +535,7 @@ class CollectionActor(globals: ReallyGlobals) extends PersistentActor
       case error: JsError => error
     }
   }
+
   private def calculateReactiveFields(input: JsObject, fields: List[ReactiveField[_]]): JsResult[JsObject] = {
     JsResultHelpers
       .merge(evaluateReactiveFields(input, fields))
@@ -751,9 +753,13 @@ object CollectionActor {
 
   trait CollectionActorEvent {
     def r: R
+
     def rev: Revision
+
     def context: RequestContext
+
     def bySender: ActorRef
+
     def response: Response
   }
 

@@ -32,6 +32,8 @@ modules/really-core/.really
 .scala_dependencies
 .worksheet
 *.sc
+.ensime
+.ensime_cache
 
 # really-docs specific
 really-docs/target

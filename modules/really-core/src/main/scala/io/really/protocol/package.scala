@@ -35,8 +35,7 @@ package object protocol {
     paginationToken: Option[PaginationToken] = None,
     skip: Int = 0,
     includeTotalCount: Boolean = false,
-    subscribe: Boolean = false
-  )
+    subscribe: Boolean = false)
 
   /*
    * Represent implicit JSON Format for ReadOpts

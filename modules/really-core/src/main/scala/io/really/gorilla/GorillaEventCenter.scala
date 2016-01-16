@@ -4,9 +4,10 @@
 package io.really.gorilla
 
 import akka.actor._
+import akka.cluster.sharding.ShardRegion
 import scala.slick.driver.H2Driver.simple._
-import akka.contrib.pattern.DistributedPubSubMediator.Subscribe
-import akka.contrib.pattern.{ DistributedPubSubMediator, ShardRegion }
+import akka.cluster.pubsub.DistributedPubSubMediator.Subscribe
+import akka.cluster.pubsub.DistributedPubSubMediator
 import io.really.gorilla.SubscriptionManager.ObjectSubscribed
 import io.really.model.{ Model, Helpers }
 import io.really._
@@ -113,7 +114,7 @@ class GorillaEventCenterSharding(config: ReallyConfig) {
    * ID Extractor for Akka Sharding extension
    * ID is the BucketId
    */
-  val idExtractor: ShardRegion.IdExtractor = {
+  val idExtractor: ShardRegion.ExtractEntityId = {
     case req: RoutableToGorillaCenter => Helpers.getBucketIDFromR(req.r) -> req
     case modelEvent: ModelEvent => modelEvent.bucketID -> modelEvent
   }
@@ -121,7 +122,7 @@ class GorillaEventCenterSharding(config: ReallyConfig) {
   /**
    * Shard Resolver for Akka Sharding extension
    */
-  val shardResolver: ShardRegion.ShardResolver = {
+  val shardResolver: ShardRegion.ExtractShardId = {
     case req: RoutableToGorillaCenter => (Helpers.getBucketIDFromR(req.r).hashCode % maxShards).toString
     case modelEvent: ModelEvent => (modelEvent.bucketID.hashCode % maxShards).toString
   }

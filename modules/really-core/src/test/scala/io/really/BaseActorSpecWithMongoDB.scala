@@ -17,7 +17,6 @@ abstract class BaseActorSpecWithMongoDB(conf: ReallyConfig = TestConf.getConfig(
   }
 
   override def afterAll(): Unit = {
-    println("Cleaning Up Database")
     Await.result(globals.mongodbConnection.drop(), 15.seconds)
     super.afterAll()
   }

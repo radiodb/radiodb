@@ -27,12 +27,12 @@
     <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
 
     <!-- Our Own Loggers -->
-    <logger name="io.really" level="DEBUG" />
-    <logger name="io.really.io" level="DEBUG" />
-    <logger name="akka" level="INFO" />
-    <logger name="Cluster(akka://Really)" level="INFO" />
-    <logger name="play" level="DEBUG" />
-    <logger name="application" level="DEBUG" />
+    <logger name="io.really" level="INFO" />
+    <logger name="io.really.io" level="INFO" />
+    <logger name="akka" level="WARN" />
+    <logger name="Cluster(akka://Really)" level="WARN" />
+    <logger name="play" level="WARN" />
+    <logger name="application" level="INFO" />
 
     <root level="WARN">
         <appender-ref ref="AKKASTDOUT"/>

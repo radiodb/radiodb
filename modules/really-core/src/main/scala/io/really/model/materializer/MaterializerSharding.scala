@@ -3,8 +3,8 @@
  */
 package io.really.model.materializer
 
+import akka.cluster.sharding.ShardRegion
 import io.really.ReallyConfig
-import akka.contrib.pattern.ShardRegion
 import io.really.model.materializer.CollectionViewMaterializer.{ RoutableToMaterializer, Envelope }
 
 class MaterializerSharding(config: ReallyConfig) {
@@ -16,7 +16,7 @@ class MaterializerSharding(config: ReallyConfig) {
    * ID Extractor for Akka Sharding extension
    * ID is the BucketId
    */
-  val idExtractor: ShardRegion.IdExtractor = {
+  val idExtractor: ShardRegion.ExtractEntityId = {
     case Envelope(bucketId, message) => bucketId -> message
     case req: RoutableToMaterializer => req.bucketId -> req
   }
@@ -24,7 +24,7 @@ class MaterializerSharding(config: ReallyConfig) {
   /**
    * Shard Resolver for Akka Sharding extension
    */
-  val shardResolver: ShardRegion.ShardResolver = {
+  val shardResolver: ShardRegion.ExtractShardId = {
     case req: RoutableToMaterializer => (req.bucketId.hashCode % maxShards).toString
   }
 

@@ -15,7 +15,8 @@ case class ValueField[T](
     dataType: DataType[T],
     validationExpression: Option[JsScript],
     default: Option[JsScript],
-    required: Boolean) extends ActiveField[T] {
+    required: Boolean
+) extends ActiveField[T] {
 
   @transient
   private[this] lazy val validateExecutor: Option[Invocable] = validationExpression.map { onValidateCode =>

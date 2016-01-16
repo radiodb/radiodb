@@ -18,7 +18,8 @@ object Protocol {
     r: Option[R] = None,
     rev: Option[Revision] = None,
     body: Option[JsObject] = None,
-    error: Option[Error] = None): JsValue =
+    error: Option[Error] = None
+  ): JsValue =
     JsObject(
       Seq[(String, JsValue)]() ++
         tag.map("tag" -> Json.toJson(_)) ++

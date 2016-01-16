@@ -6,17 +6,14 @@ resolvers += "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositori
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.3.8")
+resolvers += "Sonatype OSS Releases" at
+  "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.3.11")
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.6")
 
-addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.6.0")
-
-addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.1.6")
-
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.6.0")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")
+addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.6.0")
 
 javaOptions in Global += "-Dfile.encoding=UTF-8"
 

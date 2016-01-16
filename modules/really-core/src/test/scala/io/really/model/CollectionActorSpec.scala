@@ -337,7 +337,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
   it should "validate the reference field and create object if reference field is correct" in {
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("company" ->
-        ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
+      ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
     )
 
     val actorProp = TestProbe()
@@ -363,7 +363,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
   it should "return invalid response if reference field refereed to Non exist object" in {
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("company" ->
-        ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
+      ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
     )
 
     val actorProp = TestProbe()
@@ -388,7 +388,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
   it should "create object if reference field is optional and object contain reference field" in {
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("company" ->
-        ReferenceField("company", false, BaseActorSpec.companyModel.r, List("name")))
+      ReferenceField("company", false, BaseActorSpec.companyModel.r, List("name")))
     )
 
     val actorProp = TestProbe()
@@ -421,7 +421,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
   it should "create object if reference field is optional and object doesn't contain reference field" in {
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("company" ->
-        ReferenceField("company", false, BaseActorSpec.companyModel.r, List("name")))
+      ReferenceField("company", false, BaseActorSpec.companyModel.r, List("name")))
     )
 
     val actorProp = TestProbe()
@@ -608,7 +608,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
   it should "update reference field if it refer to exist object" in {
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("company" ->
-        ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
+      ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
     )
 
     val actorProp = TestProbe()
@@ -648,7 +648,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
   it should "fail if you try to set R for non exist object on reference field" in {
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("company" ->
-        ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
+      ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
     )
     val actorProp = TestProbe()
     modelPersistentActor.tell(PersistentModelStore.UpdateModels(List(newUserModel, BaseActorSpec.companyModel)), actorProp.ref)
@@ -688,7 +688,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
   it should "update reference field to be None if it is optional" in {
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("company" ->
-        ReferenceField("company", false, BaseActorSpec.companyModel.r, List("name")))
+      ReferenceField("company", false, BaseActorSpec.companyModel.r, List("name")))
     )
 
     val actorProp = TestProbe()
@@ -725,7 +725,7 @@ class CollectionActorSpec extends BaseActorSpec with BeforeAndAfterEach {
   it should "allow only set operation on reference field" in {
     val newUserModel = BaseActorSpec.userModel.copy(
       fields = BaseActorSpec.userModel.fields + ("company" ->
-        ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
+      ReferenceField("company", true, BaseActorSpec.companyModel.r, List("name")))
     )
 
     val actorProp = TestProbe()

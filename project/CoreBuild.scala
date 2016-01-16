@@ -28,7 +28,6 @@ object CoreBuild {
       json,
       snakeyaml,
       embedmongo,
-//      reactivemongo,
       reactivemongoPlay,
       reactivemongoJson,
       akkaPersistenceMongo,
